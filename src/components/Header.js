@@ -11,11 +11,11 @@ const Header = props => (
 	<NavDropdown.Item href="/na">NA</NavDropdown.Item>
 	<NavDropdown.Item href="/eu">EU</NavDropdown.Item>
 	</NavDropdown>
-	<Nav.Link href="/na/prices">Price Tracker</Nav.Link>
-	<Nav.Link href="/na/locations">Location Tracker</Nav.Link>
-	<Nav.Link href="/na/soaps">Active Soaps</Nav.Link>
-	<Nav.Link href="/na/outfits">Outfit Database</Nav.Link>
-	<Nav.Link href="/na/items">Item Database</Nav.Link>
+	<Nav.Link href={`/${props.region}/prices`}>Price Tracker</Nav.Link>
+	<Nav.Link href={`/${props.region}/locations`}>Location Tracker</Nav.Link>
+	<Nav.Link href={`/${props.region}/soaps`}>Active Soaps</Nav.Link>
+	<Nav.Link href={`/${props.region}/outfits`}>Outfit Database</Nav.Link>
+	<Nav.Link href={`/${props.region}/items`}>Item Database</Nav.Link>
 	</Nav>
 	</Navbar.Collapse>
 	</Navbar>
