@@ -1,0 +1,52 @@
+.PriceTracker-header {
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.PriceTracker-text {
+  color: white;
+  text-align: left;
+}
+
+.PriceTracker-width {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+.PriceTracker-background {
+  background-color: #282c34;
+}
+
+.PriceTracker-table {
+  float: left;
+  flex-basis: auto;
+}
+
+.PriceTracker-chart {
+  min-height: 300px;
+  max-height: 50%;
+  max-width: 50%;
+  background-color: white;
+}
+
+.PriceTracker-icon {
+  float: left;
+}
+
+.PriceTracker-headerColumn {
+  text-transform: none;
+}
+
+.PriceTracker-evenRow,
+.PriceTracker-oddRow {
+  border-bottom: 1px solid #e0e0e0;
+  color: black;
+}
+.PriceTracker-oddRow {
+  background-color: #fafafa;
+}
+.PriceTracker-evenRow {
+  background-color: #fff;
+}
