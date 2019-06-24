@@ -50,3 +50,7 @@
 .PriceTracker-evenRow {
   background-color: #fff;
 }
+.PriceTracker-paper {
+  margin-top: 3;
+  overflow-x: auto;
+}
