@@ -3,11 +3,11 @@ import './PriceTracker.css';
 import {Line} from 'react-chartjs-2';
 import Header from './Header';
 import AsyncSelect from 'react-select/async';
-
+import Background from './Background';
 //import 'react-virtualized/styles.css'
 //import {Table,Column,AutoSizer} from 'react-virtualized';
 
-import { makeStyles } from '@material-ui/core/styles';
+//import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Table from '@material-ui/core/Table';
@@ -15,6 +15,10 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+
+import ItemBox from './ItemCard/ItemBox';
+
+
 
 class ItemAutocomplete extends Component {
     
@@ -102,6 +106,9 @@ class ItemData extends Component {
 
         var useFirst100 = false;
 
+        var currentTrades = {};
+        var now = (new Date()).toISOString();
+
         for(var i=0;i<data.length;i++) {
             var tradeItem = data[i];
             queue.push(tradeItem);
@@ -137,24 +144,38 @@ class ItemData extends Component {
             minPriceData.push({x: tradeItem.Listed, y: minPrice});
             first100PriceData.push({x: tradeItem.Listed, y: first100Price});
             avgPriceData.push({x: tradeItem.Listed, y: avgPrice});
-
+            if(tradeItem.Expire >= now) {
+                var key = tradeItem.CID+tradeItem.ItemName+tradeItem.Expire.substring(0,16);
+                if(key in currentTrades) {
+                    currentTrades[key].Quantity += tradeItem.Quantity;
+                    if(currentTrades[key].Expire > tradeItem.Expire) {
+                        currentTrades[key].Expire = tradeItem.Expire;
+                    }
+                }
+                else {
+                    currentTrades[key] = {
+                        CharacterName: tradeItem.CharacterName,
+                        Quantity: tradeItem.Quantity,
+                        Price: tradeItem.Price,
+                        Expire: tradeItem.Expire
+                    };
+                }
+            }
         }
-        var now = (new Date()).toISOString();
-        //console.log(now)
-        const filterByCurrent = (item) => item.Expire >= now;
-        var currentTrades = data.filter(filterByCurrent);
         
+        //console.log(now)
+        currentTrades = Object.values(currentTrades);
         const sortByPrice = (a, b) => a.Price > b.Price;
         currentTrades.sort(sortByPrice);
-        console.log(data.length,currentTrades.length)
+        //console.log(data.length,currentTrades.length)
         //var lastExpire = new Date();
         //minPriceData.push({x: lastExpire, y: minPrice});
         //first100PriceData.push({x: lastExpire, y: first100Price});
         //avgPriceData.push({x: lastExpire, y: avgPrice});
 
-        this.setupData(minPriceData,first100PriceData,avgPriceData,useFirst100,currentTrades);
+        this.setupData(minPriceData,first100PriceData,avgPriceData,useFirst100,currentTrades,data[0]);
     }
-    setupData(minPriceData,first100PriceData,avgPriceData,useFirst100,currentTrades) {
+    setupData(minPriceData,first100PriceData,avgPriceData,useFirst100,currentTrades,tradeItemData) {
         var lines = [
             {name:"Min Price",data:minPriceData,color:"rgba(0,255,0,0.4)"},
             {name:"Average Price",data:avgPriceData,color:"rgba(255,0,0,0.4)"},
@@ -189,7 +210,7 @@ class ItemData extends Component {
                 }
             );
         }
-        this.setState({tradeData:data,currentTrades:currentTrades});
+        this.setState({tradeData:data,currentTrades:currentTrades,firstTradeItem:tradeItemData});
     }
 
     getIcon() {
@@ -218,6 +239,7 @@ class ItemData extends Component {
         }
         const tableData = [
             {name: "Name", value: this.state.itemData.sanitized_name},
+            {name: "Description", value: this.state.itemData.description},
             {name: "Category", value: this.toTitleCase(this.state.itemData.trade_category)},
             {name: "Subcategory", value: this.toTitleCase(this.state.itemData.trade_category_sub)},
             {name: "Level", value: this.state.itemData.level},
@@ -262,7 +284,7 @@ class ItemData extends Component {
             str.push(days);
             str.push("minutes");
         }
-        console.log(str);
+        //console.log(str);
         return str.join(' ');
     }
     getTradeTable() {
@@ -273,7 +295,7 @@ class ItemData extends Component {
         return (
             <Table>
                 <TableHead>
-                    <TableRow>
+                    <TableRow key={-1}>
                         <TableCell>Seller</TableCell>
                         <TableCell>Quantity</TableCell>
                         <TableCell>Price</TableCell>
@@ -282,7 +304,7 @@ class ItemData extends Component {
                 </TableHead>
                 <TableBody>
                     {currentTrades.map(trade => (
-                    <TableRow key={trade.TID}>
+                    <TableRow key={trade.Expire}>
                         <TableCell component="th" scope="row">{trade.CharacterName}</TableCell>
                         <TableCell>{trade.Quantity}</TableCell>
                         <TableCell>{trade.Price}</TableCell>
@@ -346,29 +368,43 @@ class ItemData extends Component {
         //console.log(this.state.data)
         if(this.state.data !== null) {
             
-            const icon = this.getIcon();
-            const table = this.getItemTable();
+            //const icon = this.getIcon();
+            //const table = this.getItemTable();
             const chart = this.getChart();
             const tradeTable = this.getTradeTable();
+            //const itemName = this.state.itemData ? this.state.itemData.sanitized_name : "";
+            let itemBox = (null);
+            if(this.state.itemData && this.state.firstTradeItem) {
+                console.log(this.state.itemData);
+                console.log(this.state.firstTradeItem);
+                const itemInfo = {item:this.state.itemData,tradeItem:this.state.firstTradeItem};
+                itemBox = (<ItemBox itemInfo={itemInfo}/>);
+            }
+            
+            //<Grid item zeroMinWidth>
+            //<label className="PriceTracker-header">{itemName}</label>
+            //<Paper className="PriceTracker-paper">
+            //    {icon}
+            //</Paper>
+        //</Grid>
+        //<Grid item zeroMinWidth>
+            //<Paper className="PriceTracker-paper">
+                //{table}
+            //</Paper>
+        //</Grid>
             return (
                 <div>
+                    
                 <Grid container direction="row" justify="center" alignItems="flex-start" spacing={1}>
-                    <Grid item zeroMinWidth>
-                        <Paper >
-                            {icon}
-                        </Paper>
-                    </Grid>
-                    <Grid item zeroMinWidth>
-                        <Paper className="PriceTracker-paper">
-                            {table}
-                        </Paper>
+                    <Grid item>
+                    {itemBox}
                     </Grid>
                     <Grid item xs={5} className="PriceTracker-paper">
                         <Paper>
                             {chart}
                         </Paper>
                     </Grid>
-                    <Grid item xs={8} className="PriceTracker-paper">
+                    <Grid item xs={5} className="PriceTracker-paper">
                         <Paper>
                             {tradeTable}
                         </Paper>
@@ -386,21 +422,21 @@ class ItemData extends Component {
 
 
 function PriceTracker({match}) {
-    
 	return (
-		<div className="App">
-			<Header region={match.params.region} />
-            <div className="PriceTracker-background">
-                <div className="PriceTracker-width">
-                    <label className="PriceTracker-header">Pick an item to analyze</label>
-                    <br/>
-                    <ItemAutocomplete region={match.params.region}/>
-                    <br/>
-                </div>
-                <ItemData item={match.params.item}/>
-                <header className="App-header"></header>
+        <div>
+            <Header region={match.params.region} />
+            <Background y={17} />
+            
+            <div className="PriceTracker-height">
+            <div className="PriceTracker-width">
+                <label className="PriceTracker-header">Pick an item to analyze</label>
+                <br/>
+                <ItemAutocomplete region={match.params.region}/>
+                <br/>
             </div>
-		</div>
+            </div>
+            <ItemData item={match.params.item}/>
+        </div>
 	);
 }
 

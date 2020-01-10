@@ -1,0 +1,8 @@
+@font-face {
+	font-family: 'ITC Goudy Sans Std Medium';
+	src: local('ITC Goudy Sans Std Medium'), url(/GoudySansStd-Medium.otf) format('opentype');
+}
+
+p {
+	margin-top: 11px;
+}
