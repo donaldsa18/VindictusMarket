@@ -87,7 +87,11 @@ export default class ItemBox extends Component {
 		}
 		let description = this.props.itemInfo.item.description;
 		let trade_category = this.props.itemInfo.item.trade_category;
-		let stat_str = this.props.itemInfo.tradeItem.Attributes.StatStr;
+		let stat_str = ""
+		if (this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
+			stat_str = this.props.itemInfo.tradeItem.Attributes.StatStr;
+		}
+		
 		if(!description || trade_category === "Composite Material" || stat_str) {
 			return (null);
 		}
@@ -325,7 +329,7 @@ export default class ItemBox extends Component {
 	}
 	
 	getCompositeLine() {
-		if(!this.props.itemInfo || !this.props.itemInfo.tradeItem) {
+		if(!this.props.itemInfo || !this.props.itemInfo.tradeItem || !this.props.itemInfo.tradeItem.Attributes) {
 			return (null);
 		}
 		const composite = this.props.itemInfo.tradeItem.Attributes.Composite;
@@ -444,7 +448,7 @@ export default class ItemBox extends Component {
 	}
 	
 	getDurabilityLine() {
-		if(!this.props.itemInfo || !this.props.itemInfo.tradeItem) {
+		if(!this.props.itemInfo || !this.props.itemInfo.tradeItem || !this.props.itemInfo.tradeItem.Attributes) {
 			return (null);
 		}
 		let durability = this.props.itemInfo.tradeItem.Attributes.Durability;
@@ -542,7 +546,7 @@ export default class ItemBox extends Component {
 	
 	getAbilityLine() {
 		let ability = "";
-		if(this.props.itemInfo && this.props.itemInfo.tradeItem) {
+		if(this.props.itemInfo && this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 			ability = this.props.itemInfo.tradeItem.Attributes.Stat.Ability;
 		}
 		if(!ability) {
@@ -576,7 +580,7 @@ export default class ItemBox extends Component {
 	getStatLine() {
 		let statStr = "";
 		if(this.props.itemInfo) {
-			if(this.props.itemInfo.tradeItem) {
+			if(this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 				statStr = this.props.itemInfo.tradeItem.Attributes.StatStr;
 			}
 			if(!statStr && this.props.itemInfo.item) {
@@ -625,7 +629,7 @@ export default class ItemBox extends Component {
 	
 	getInfusionLine() {
 		let SpiritInjection = "";
-		if(this.props.itemInfo && this.props.itemInfo.tradeItem) {
+		if(this.props.itemInfo && this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 			SpiritInjection = this.props.itemInfo.tradeItem.Attributes.SpiritInjection;
 		}
 		if(!SpiritInjection) {
@@ -662,7 +666,7 @@ export default class ItemBox extends Component {
 	
 	getUnbindLine() {
 		let antibind = 0;
-		if(this.props.itemInfo && this.props.itemInfo.tradeItem) {
+		if(this.props.itemInfo && this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 			antibind = this.props.itemInfo.tradeItem.Attributes.AntiBind;
 		}
 		if(this.isEquipable()) {
@@ -700,7 +704,7 @@ export default class ItemBox extends Component {
 			return (null);
 		}
 		let maxEnhance = "";
-		if(this.props.itemInfo.tradeItem) {
+		if(this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 			maxEnhance = this.props.itemInfo.tradeItem.Attributes.MaxEnhance;
 		}
 		let required = "";
@@ -762,6 +766,9 @@ export default class ItemBox extends Component {
 	getColors() {
 		if(!this.props.itemInfo || !this.props.itemInfo.tradeItem) {
 			return (null);
+		}
+		if(!this.props.itemInfo.tradeItem.Attributes) {
+			return (null)
 		}
 		const {Color1,Color2,Color3} = this.props.itemInfo.tradeItem.Attributes;
 		if(!Color1) {
@@ -947,7 +954,7 @@ export default class ItemBox extends Component {
 			trade_category_sub = this.props.itemInfo.item.trade_category_sub;
 		}
 		let colors = [0,0,0];
-		if(this.props.itemInfo && this.props.itemInfo.tradeItem) {
+		if(this.props.itemInfo && this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 			colors[0] = this.props.itemInfo.tradeItem.Attributes.Color1;
 			colors[1] = this.props.itemInfo.tradeItem.Attributes.Color2;
 			colors[2] = this.props.itemInfo.tradeItem.Attributes.Color3;
@@ -1074,7 +1081,7 @@ export default class ItemBox extends Component {
 		let rarityNum = 0;
 		let sanitized_name = "";
 		if(this.props.itemInfo) {
-			if(this.props.itemInfo.tradeItem) {
+			if(this.props.itemInfo.tradeItem && this.props.itemInfo.tradeItem.Attributes) {
 				rarityNum = this.props.itemInfo.tradeItem.Attributes.Rarity;
 				if(!rarityNum && this.props.itemInfo.item) {
 					rarityNum = this.props.itemInfo.item.rarity;
@@ -1202,6 +1209,7 @@ export default class ItemBox extends Component {
 	}
 
 	render() {
+		this.down = 106;
 		let components = [];
 		components.push(this.getIcon());
 		components.push(this.getPrices());

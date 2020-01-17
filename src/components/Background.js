@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component } from 'react';
+import React, { useState } from 'react';
 import { useSpring, animated } from 'react-spring';
 import './Background.css'
 

@@ -18,7 +18,83 @@ import TableRow from '@material-ui/core/TableRow';
 
 import ItemBox from './ItemCard/ItemBox';
 
+import {ReactiveBase} from '@appbaseio/reactivesearch';
+import {DataSearch,ReactiveList} from '@appbaseio/reactivesearch';
 
+class Searchbar extends Component {
+    
+    constructor(props) {
+        super(props);
+        this.state = {
+            region: props.region
+        };
+    }
+
+    onAutocompleteChange(opt) {
+        window.location = "/"+this.state.region+"/prices/"+opt;
+    }
+
+    makeItemBox(item) {
+        var itemBox = ""
+        if(item) {
+            itemBox = (<ItemBox itemInfo={item}/>)
+        }
+        return (
+            <div>
+            {console.log(item)}
+            {itemBox}
+            </div>
+            )
+    }
+    getItemClass(item) {
+        if(item) {
+            fetch("/api/itemnames/"+item)
+            .then(response => response.json())
+            .then(data => this.onAutocompleteChange(data.data.value))
+        }
+    }
+
+    render() {
+        const url = process.env.ELASTICSEARCH_URL || "http://192.168.99.101:32557/"
+        const list = (<ReactiveList
+            componentID="searchResult"
+            dataField="description"
+            stream={true}
+            pagination={false}
+            paginationAt="bottom"
+            pages={5}
+            sortBy="desc"
+            size={10}
+            loader="Loading Results.."
+            showResultStats={true}
+            renderItem={(res) => <div>{res.sanitized_name}</div>}
+            renderResultStats={
+                function(stats){
+                    return (
+                        `Showing ${stats.displayedResults} of total ${stats.numberOfResults} in ${stats.time} ms`
+                    )
+                }
+            }
+            react={{
+                "and": ["search"]
+            }}
+            />)
+            //{data.map(item => <ItemBox itemInfo={item}/>)}
+        const reactivebase = (
+        <ReactiveBase app="marketquery" type="items" url={url}>
+            <DataSearch 
+                app="marketquery" 
+                componentId="search"
+                dataField={['sanitized_name']}
+                autosuggest={true}
+                onValueSelected={(e) => this.getItemClass(e)}
+            />
+            
+        </ReactiveBase>)
+        
+        return (reactivebase)
+    }
+}
 
 class ItemAutocomplete extends Component {
     
@@ -393,9 +469,9 @@ class ItemData extends Component {
             //</Paper>
         //</Grid>
             return (
-                <div>
+                <div className="PriceTracker-itemdata">
                     
-                <Grid container direction="row" justify="center" alignItems="flex-start" spacing={1}>
+                <Grid container direction="row" justify="center" alignItems="flex-start" spacing={1} className="PriceTracker-grid">
                     <Grid item>
                     {itemBox}
                     </Grid>
@@ -422,20 +498,25 @@ class ItemData extends Component {
 
 
 function PriceTracker({match}) {
+    //<ItemAutocomplete region={match.params.region}/>
+    const heightclass = match.params.item ? "PriceTracker-height-top" : "PriceTracker-height"
+    const label = match.params.item ? "" : (<label className="PriceTracker-header">Pick an item to analyze</label>)
 	return (
         <div>
             <Header region={match.params.region} />
             <Background y={17} />
             
-            <div className="PriceTracker-height">
+            <div className={heightclass}>
             <div className="PriceTracker-width">
-                <label className="PriceTracker-header">Pick an item to analyze</label>
+                {label}
                 <br/>
-                <ItemAutocomplete region={match.params.region}/>
+                <Searchbar region={match.params.region}/>
                 <br/>
-            </div>
+                
             </div>
             <ItemData item={match.params.item}/>
+            </div>
+                
         </div>
 	);
 }

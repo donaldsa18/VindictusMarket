@@ -8,22 +8,32 @@
   text-align: left;
 }
 
-.PriceTracker-container {
-  width: 100%;
-  height: calc(100vh-56px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-color: #000000;
-  margin: 0;
-}
-
 .PriceTracker-height {
   position: absolute;
   top: 45vh;
   width: 100%;
   margin: 0;
+}
+
+.PriceTracker-height-top {
+  position: absolute;
+  top: 57px;
+  width: 100%;
+  margin: 0;
+}
+
+.PriceTracker-grid {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.PriceTracker-itemdata {
+  position: relative;
+
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .PriceTracker-width {
