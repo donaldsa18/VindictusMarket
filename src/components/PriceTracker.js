@@ -150,6 +150,7 @@ class ItemData extends Component {
     componentDidMount() {
         this.getItemData();
         this.getTradeData();
+        this.getPriceData();
     }
     getItemData() {
         if(this.state.item) {
@@ -163,95 +164,39 @@ class ItemData extends Component {
             //console.log("fetching /api/trades/"+this.state.item);
             fetch("/api/trades/"+this.state.item)
             .then(response => response.json())
+            .then(data => this.setupTradeData(data.data))
+        }
+    }
+    getPriceData() {
+        if(this.state.item) {
+            //console.log("fetching /api/trades/"+this.state.item);
+            fetch("/api/pricehistory/"+this.state.item)
+            .then(response => response.json())
             .then(data => this.setupPriceData(data.data))
         }
     }
+    setupTradeData(data) {
+        if(!data || data.length === 0) {
+            return;
+        }
+        this.setState({currentTrades:data,firstTradeItem:data[0]});
+    }
+
     setupPriceData(data) {
         //console.log("length: "+data.length+" Data: "+JSON.stringify(data));
         if(!data || data.length === 0) {
             return;
         }
-        //console.log("Data[0]: "+JSON.stringify(data[0]));
-        const sortByListed = (a, b) => a.Listed > b.Listed;
-        const filterByExpire = (item) => item.Expire >= tradeItem.Listed;
-        var queue = [];
 
-        var minPriceData = [];
-        var first100PriceData = [];
-        var avgPriceData = [];
+        var useFirst100 = true;
 
-        var useFirst100 = false;
+        var minPriceData = data.map(tradeItem=>({x: tradeItem.Listed, y: tradeItem.MinPrice}))
+        var first100PriceData = data.map(tradeItem=>({x: tradeItem.Listed, y: tradeItem.first100PriceData}))
+        var avgPriceData = data.map(tradeItem=>({x: tradeItem.Listed, y: tradeItem.AvgPrice}))
 
-        var currentTrades = {};
-        var now = (new Date()).toISOString();
-
-        for(var i=0;i<data.length;i++) {
-            var tradeItem = data[i];
-            queue.push(tradeItem);
-            queue.sort(sortByListed);
-            //console.log(typeof(tradeItem.Expire));
-            //console.log("tradeItem: "+JSON.stringify(tradeItem));
-            //console.log("Queue: "+JSON.stringify(queue));
-            queue = queue.filter(filterByExpire);
-            //console.log("Queue: "+JSON.stringify(queue));
-            var minPrice = queue[0].Price;
-            var first100Price = 0;
-            let numSeen = 0;
-            for(let j = 0;j<queue.length && numSeen < 100;j++) {
-                if(numSeen+queue[j].Quantity < 100) {
-                    first100Price += queue[j].Price*queue[j].Quantity;
-                    numSeen += queue[j].Quantity;
-                }
-                else {
-                    first100Price += queue[j].Price*(100-numSeen);
-                    numSeen = 100;
-                    useFirst100 = true;
-                }
-            }
-            first100Price /= numSeen;
-            var avgPrice = 0;
-            numSeen = 0;
-            for(let j = 0;j<queue.length;j++) {
-                avgPrice += queue[j].Price*queue[j].Quantity;
-                numSeen += queue[j].Quantity;
-            }
-            
-            avgPrice = avgPrice/numSeen;
-            minPriceData.push({x: tradeItem.Listed, y: minPrice});
-            first100PriceData.push({x: tradeItem.Listed, y: first100Price});
-            avgPriceData.push({x: tradeItem.Listed, y: avgPrice});
-            if(tradeItem.Expire >= now) {
-                var key = tradeItem.CID+tradeItem.ItemName+tradeItem.Expire.substring(0,16);
-                if(key in currentTrades) {
-                    currentTrades[key].Quantity += tradeItem.Quantity;
-                    if(currentTrades[key].Expire > tradeItem.Expire) {
-                        currentTrades[key].Expire = tradeItem.Expire;
-                    }
-                }
-                else {
-                    currentTrades[key] = {
-                        CharacterName: tradeItem.CharacterName,
-                        Quantity: tradeItem.Quantity,
-                        Price: tradeItem.Price,
-                        Expire: tradeItem.Expire
-                    };
-                }
-            }
-        }
-        
-        //console.log(now)
-        currentTrades = Object.values(currentTrades);
-        const sortByPrice = (a, b) => a.Price > b.Price;
-        currentTrades.sort(sortByPrice);
-        //console.log(data.length,currentTrades.length)
-        //var lastExpire = new Date();
-        //minPriceData.push({x: lastExpire, y: minPrice});
-        //first100PriceData.push({x: lastExpire, y: first100Price});
-        //avgPriceData.push({x: lastExpire, y: avgPrice});
-
-        this.setupData(minPriceData,first100PriceData,avgPriceData,useFirst100,currentTrades,data[0]);
+        this.setupData(minPriceData,first100PriceData,avgPriceData,useFirst100);
     }
-    setupData(minPriceData,first100PriceData,avgPriceData,useFirst100,currentTrades,tradeItemData) {
+    setupData(minPriceData,first100PriceData,avgPriceData,useFirst100) {
         var lines = [
             {name:"Min Price",data:minPriceData,color:"rgba(0,255,0,0.4)"},
             {name:"Average Price",data:avgPriceData,color:"rgba(255,0,0,0.4)"},
@@ -286,7 +231,7 @@ class ItemData extends Component {
                 }
             );
         }
-        this.setState({tradeData:data,currentTrades:currentTrades,firstTradeItem:tradeItemData});
+        this.setState({tradeData:data});
     }
 
     getIcon() {
@@ -380,7 +325,7 @@ class ItemData extends Component {
                 </TableHead>
                 <TableBody>
                     {currentTrades.map(trade => (
-                    <TableRow key={trade.Expire}>
+                    <TableRow key={trade.TID}>
                         <TableCell component="th" scope="row">{trade.CharacterName}</TableCell>
                         <TableCell>{trade.Quantity}</TableCell>
                         <TableCell>{trade.Price}</TableCell>
@@ -409,7 +354,11 @@ class ItemData extends Component {
               }
             },
             tooltips: {
-              enabled: false
+              callbacks: {
+                label: function(tooltipItem, data) {
+                    return data.datasets[tooltipItem.datasetIndex].label + ': '+ tooltipItem.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+              }
             },
             responsive: true,
             maintainAspectRatio: false,
@@ -431,7 +380,15 @@ class ItemData extends Component {
                   autoSkipPadding: 50
                 },
               }],
-            }
+              yAxes: [{
+                ticks: {
+                    callback(value) {
+                      // you can add your own method here (just an example)
+                      return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                  },  
+            }]
+        }
         };
         return (
             <Line ref="chart" data={this.state.tradeData} options={options} height={245}/>
