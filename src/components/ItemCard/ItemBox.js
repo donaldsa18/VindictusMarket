@@ -219,7 +219,7 @@ export default class ItemBox extends Component {
 				circle: {
 					position: 'absolute',
 					left: 20+leftOffset,
-			  		top: this.down+listDown[i%2]+4,
+			  		top: this.down+listDown[i%2]+12,
 					fontSize: 18,
 					color: '#2C2C2C',
 				},
@@ -279,7 +279,7 @@ export default class ItemBox extends Component {
 				circle: {
 					position: 'absolute',
 					left: 20,
-			  		top: this.down,
+			  		top: this.down+14,
 					fontSize: 20,
 					color: '#2C2C2C',
 				},
@@ -880,7 +880,7 @@ export default class ItemBox extends Component {
 		const categoryStyle = {
 			  position: 'absolute',
 			  left: 65,
-			  top: 43,
+			  top: 46,
 			  fontSize: 11,
 			  color: '#7E7E7E',
 		};
@@ -962,8 +962,8 @@ export default class ItemBox extends Component {
 		const style = {
 			icon: {
 				position: 'absolute',
-				left: 13,
-				top: 27,
+				left: 12,
+				top: 26,
 				zIndex: 1,
 				//borderRadius: 2,
 			},
@@ -1143,14 +1143,14 @@ export default class ItemBox extends Component {
 			sellPrice: {
 				position: 'absolute',
 				left: 203,
-				top: 42,
+				top: 46,
 				fontSize: 11,
 				color: '#7E7F81',
 			},
 			marketplace: {
 				position: 'absolute',
 				left: 65,
-				top: 61,
+				top: 65,
 				fontSize: 11,
 				color: '#7E7E7E',
 			},
@@ -1241,7 +1241,7 @@ export default class ItemBox extends Component {
 			MozOsxFontSmoothing: "grayscale",
 			fontFamily: 'ITC Goudy Sans Std Medium',
 			boxShadow: 'inset 0 0 15px #575C5F',
-			
+			opacity: 0.95,
 		};
 		if(this.props.background) {
 			rectStyle.backgroundPosition = this.props.background.offset;

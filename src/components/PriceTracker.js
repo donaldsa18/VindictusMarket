@@ -6,7 +6,6 @@ import AsyncSelect from 'react-select/async';
 import Background from './Background';
 //import 'react-virtualized/styles.css'
 //import {Table,Column,AutoSizer} from 'react-virtualized';
-
 //import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
@@ -15,7 +14,8 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-
+import TablePagination from '@material-ui/core/TablePagination';
+import TableFooter from '@material-ui/core/TableFooter';
 import ItemBox from './ItemCard/ItemBox';
 
 import {ReactiveBase} from '@appbaseio/reactivesearch';
@@ -55,7 +55,8 @@ class Searchbar extends Component {
     }
 
     render() {
-        const url = process.env.ELASTICSEARCH_URL || "http://192.168.99.101:32557/"
+        var getUrl = window.location;
+        const url = getUrl.protocol + "//" + getUrl.host + "/search";
         const list = (<ReactiveList
             componentID="searchResult"
             dataField="description"
@@ -144,7 +145,9 @@ class ItemData extends Component {
             item: props.item,
             itemData: null,
             tradeData: null,
-            currentTrades: null
+            currentTrades: null,
+            page: 0,
+            itemBoxHeight: 400,
         };
     }
     componentDidMount() {
@@ -308,11 +311,17 @@ class ItemData extends Component {
         //console.log(str);
         return str.join(' ');
     }
+
     getTradeTable() {
         if(!this.state.currentTrades || this.state.currentTrades.length === 0) {
             return (<div></div>);
         }
         const currentTrades = this.state.currentTrades;
+        const handleChangePage = (event, newPage) => {
+            this.setState({page:newPage});
+        };
+
+        const rowLength = Math.ceil(currentTrades.length/10)
         return (
             <Table>
                 <TableHead>
@@ -333,11 +342,25 @@ class ItemData extends Component {
                     </TableRow>
                     ))}
                 </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TablePagination
+                        colSpan={3}
+                        count={rowLength}
+                        rowsPerPage={10}
+                        page={this.state.page}
+                        SelectProps={{
+                            inputProps: { 'aria-label': 'rows per page' },
+                            native: true,
+                        }}
+                        />
+                    </TableRow>
+                </TableFooter>
             </Table>
         );
     }
 
-    getChart() {
+    getChart(height) {
         if(!this.state.tradeData) {
             return (<div></div>);
         }
@@ -391,7 +414,7 @@ class ItemData extends Component {
         }
         };
         return (
-            <Line ref="chart" data={this.state.tradeData} options={options} height={245}/>
+            <Line ref="chart" data={this.state.tradeData} options={options} height={height}/>
         );
     }
 
@@ -403,16 +426,19 @@ class ItemData extends Component {
             
             //const icon = this.getIcon();
             //const table = this.getItemTable();
-            const chart = this.getChart();
+            
             const tradeTable = this.getTradeTable();
             //const itemName = this.state.itemData ? this.state.itemData.sanitized_name : "";
             let itemBox = (null);
+            let chart = this.getChart(this.state.itemBoxHeight);
             if(this.state.itemData && this.state.firstTradeItem) {
                 console.log(this.state.itemData);
                 console.log(this.state.firstTradeItem);
                 const itemInfo = {item:this.state.itemData,tradeItem:this.state.firstTradeItem};
                 itemBox = (<ItemBox itemInfo={itemInfo}/>);
             }
+            
+            
             
             //<Grid item zeroMinWidth>
             //<label className="PriceTracker-header">{itemName}</label>
@@ -432,12 +458,12 @@ class ItemData extends Component {
                     <Grid item>
                     {itemBox}
                     </Grid>
-                    <Grid item xs={5} className="PriceTracker-paper">
+                    <Grid item xs={5} className="PriceTracker-paper" elevation={3}>
                         <Paper>
                             {chart}
                         </Paper>
                     </Grid>
-                    <Grid item xs={5} className="PriceTracker-paper">
+                    <Grid item xs={6} className="PriceTracker-paper" elevation={3}>
                         <Paper>
                             {tradeTable}
                         </Paper>
@@ -458,10 +484,12 @@ function PriceTracker({match}) {
     //<ItemAutocomplete region={match.params.region}/>
     const heightclass = match.params.item ? "PriceTracker-height-top" : "PriceTracker-height"
     const label = match.params.item ? "" : (<label className="PriceTracker-header">Pick an item to analyze</label>)
-	return (
+    return (
         <div>
             <Header region={match.params.region} />
-            <Background y={17} />
+            <Background y={17}>
+                
+            </Background>
             
             <div className={heightclass}>
             <div className="PriceTracker-width">
