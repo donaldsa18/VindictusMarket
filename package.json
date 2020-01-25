@@ -20,12 +20,13 @@
     "react-select": "^3.0.4",
     "react-spring": "^8.0.27",
     "react-virtualized": "^9.21.1",
+    "serve": "^11.3.0",
     "typescript": "^3.5.2"
   },
   "scripts": {
     "start": "set PORT=3002 && react-scripts start",
     "build": "react-scripts build",
-	"start-prod": "serve -s build -l 3002",
+    "start-prod": "serve -s build -l 3002",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
