@@ -56,7 +56,8 @@ class Searchbar extends Component {
 
     render() {
         var getUrl = window.location;
-        const url = getUrl.protocol + "//" + getUrl.host + "/search";
+        const url = getUrl.protocol + "//" + getUrl.host + "/marketquery";
+
         const list = (<ReactiveList
             componentID="searchResult"
             dataField="description"
@@ -342,7 +343,13 @@ class ItemData extends Component {
                     </TableRow>
                     ))}
                 </TableBody>
-                <TableFooter>
+                
+            </Table>
+        );
+        /**
+         * 
+         * 
+         <TableFooter>
                     <TableRow>
                         <TablePagination
                         colSpan={3}
@@ -356,8 +363,7 @@ class ItemData extends Component {
                         />
                     </TableRow>
                 </TableFooter>
-            </Table>
-        );
+         */
     }
 
     getChart(height) {
