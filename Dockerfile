@@ -2,6 +2,8 @@ FROM node:8
 WORKDIR /usr/src/vindictusmarket
 COPY package*.json ./
 RUN npm install
-COPY . .
+COPY src ./src
+COPY public ./public
+RUN npm run build
 EXPOSE 3002
-cmd ["npm","start"]
+cmd ["npm","run","start-prod"]
